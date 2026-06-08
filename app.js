@@ -19,16 +19,21 @@ const app = {
     }
     
     if (COURSE_DATA.encrypted) {
-      document.getElementById('passwordPrompt').style.display = 'block';
+      const savedPwd = localStorage.getItem('lt_japanese_pwd');
+      if (savedPwd) {
+        this.decryptData(savedPwd);
+      } else {
+        document.getElementById('passwordPrompt').style.display = 'block';
+      }
     } else {
       this.data = COURSE_DATA;
       this.onDataReady();
     }
   },
 
-  async decryptData() {
-    const pwdInput = document.getElementById('passwordInput').value;
-    document.getElementById('decryptError').style.display = 'none';
+  async decryptData(autoPwd = null) {
+    const pwdInput = autoPwd || document.getElementById('passwordInput').value;
+    if (!autoPwd) document.getElementById('decryptError').style.display = 'none';
     
     try {
       const salt = this.base64ToArrayBuffer(COURSE_DATA.salt);
@@ -67,12 +72,21 @@ const app = {
       const jsonStr = dec.decode(decryptedBuffer);
       this.data = JSON.parse(jsonStr);
       
+      if (!autoPwd) {
+        localStorage.setItem('lt_japanese_pwd', pwdInput);
+      }
+      
       document.getElementById('passwordPrompt').style.display = 'none';
       this.onDataReady();
       
     } catch (e) {
       console.error("Decryption failed:", e);
-      document.getElementById('decryptError').style.display = 'block';
+      if (autoPwd) {
+        localStorage.removeItem('lt_japanese_pwd');
+        document.getElementById('passwordPrompt').style.display = 'block';
+      } else {
+        document.getElementById('decryptError').style.display = 'block';
+      }
     }
   },
   
@@ -203,6 +217,16 @@ const app = {
           <button class="pronunciation-btn" onclick="app.speak('${step.answer.kana}')">
             🔊 Pronounce
           </button>
+          
+          <div class="kana-breakdown-container">
+            <button class="hint-toggle" onclick="app.toggleBreakdown(${index})" style="margin-top: 12px; display: flex; align-items: center; gap: 4px;">
+               <span id="breakdownIcon${index}">▶</span> Character Breakdown
+            </button>
+            <div id="breakdownContent${index}" style="display:none; margin-top: 8px; font-size: 13px; border-left: 2px solid var(--border); padding-left: 12px; max-height: 200px; overflow-y: auto;">
+              ${app.generateBreakdownHTML(step.answer.kana)}
+            </div>
+          </div>
+          
           ${followUpHtml}
         </div>
       </div>`;
@@ -388,6 +412,119 @@ const app = {
         }, 100);
       }
     } catch (e) { console.error('Resume failed', e); }
+  },
+
+  generateBreakdownHTML(kanaStr) {
+    let resultHTML = '';
+    for (let i = 0; i < kanaStr.length; i++) {
+      let char = kanaStr[i];
+      if (char === ' ' || char === '　') continue;
+      
+      let digraph = char + (kanaStr[i+1] || '');
+      let soundObj = null;
+      let matchedChar = '';
+      
+      if (this.KANA_DICT[digraph]) {
+        soundObj = this.KANA_DICT[digraph];
+        matchedChar = digraph;
+        i++;
+      } else {
+        soundObj = this.KANA_DICT[char] || { r: '?', t: 'Kanji / Unknown' };
+        if (char >= '\u4E00' && char <= '\u9FAF') {
+          soundObj = { r: '(needs context)', t: 'Kanji' };
+        } else if (char === 'ー') {
+          soundObj = { r: '(long vowel)', t: 'Katakana' };
+        } else if (char === 'っ' || char === 'ッ') {
+          soundObj = { r: '(double consonant)', t: char === 'っ' ? 'Hiragana' : 'Katakana' };
+        }
+        matchedChar = char;
+      }
+      
+      resultHTML += \`
+        <div style="display: flex; gap: 12px; margin-bottom: 4px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-weight: bold; width: 24px; color: var(--text-primary); text-align: center;">\${matchedChar}</span>
+          <span style="color: var(--accent-gold); width: 60px;">\${soundObj.r}</span>
+          <span style="color: var(--text-muted); font-size: 11px; align-self: center;">\${soundObj.t}</span>
+        </div>\`;
+    }
+    return resultHTML || '<div style="color: var(--text-muted); padding: 4px 0;">No kana found</div>';
+  },
+
+  toggleBreakdown(index) {
+    const content = document.getElementById(\`breakdownContent\${index}\`);
+    const icon = document.getElementById(\`breakdownIcon\${index}\`);
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      icon.textContent = '▼';
+    } else {
+      content.style.display = 'none';
+      icon.textContent = '▶';
+    }
+  },
+
+  KANA_DICT: {
+    // Hiragana
+    "あ":{r:"a",t:"Hiragana"}, "い":{r:"i",t:"Hiragana"}, "う":{r:"u",t:"Hiragana"}, "え":{r:"e",t:"Hiragana"}, "お":{r:"o",t:"Hiragana"},
+    "か":{r:"ka",t:"Hiragana"}, "き":{r:"ki",t:"Hiragana"}, "く":{r:"ku",t:"Hiragana"}, "け":{r:"ke",t:"Hiragana"}, "こ":{r:"ko",t:"Hiragana"},
+    "さ":{r:"sa",t:"Hiragana"}, "し":{r:"shi",t:"Hiragana"}, "す":{r:"su",t:"Hiragana"}, "せ":{r:"se",t:"Hiragana"}, "そ":{r:"so",t:"Hiragana"},
+    "た":{r:"ta",t:"Hiragana"}, "ち":{r:"chi",t:"Hiragana"}, "つ":{r:"tsu",t:"Hiragana"}, "て":{r:"te",t:"Hiragana"}, "と":{r:"to",t:"Hiragana"},
+    "な":{r:"na",t:"Hiragana"}, "に":{r:"ni",t:"Hiragana"}, "ぬ":{r:"nu",t:"Hiragana"}, "ね":{r:"ne",t:"Hiragana"}, "の":{r:"no",t:"Hiragana"},
+    "は":{r:"ha",t:"Hiragana"}, "ひ":{r:"hi",t:"Hiragana"}, "ふ":{r:"fu",t:"Hiragana"}, "へ":{r:"he",t:"Hiragana"}, "ほ":{r:"ho",t:"Hiragana"},
+    "ま":{r:"ma",t:"Hiragana"}, "み":{r:"mi",t:"Hiragana"}, "む":{r:"mu",t:"Hiragana"}, "め":{r:"me",t:"Hiragana"}, "も":{r:"mo",t:"Hiragana"},
+    "や":{r:"ya",t:"Hiragana"}, "ゆ":{r:"yu",t:"Hiragana"}, "よ":{r:"yo",t:"Hiragana"},
+    "ら":{r:"ra",t:"Hiragana"}, "り":{r:"ri",t:"Hiragana"}, "る":{r:"ru",t:"Hiragana"}, "れ":{r:"re",t:"Hiragana"}, "ろ":{r:"ro",t:"Hiragana"},
+    "わ":{r:"wa",t:"Hiragana"}, "を":{r:"wo",t:"Hiragana"}, "ん":{r:"n",t:"Hiragana"},
+    "が":{r:"ga",t:"Hiragana"}, "ぎ":{r:"gi",t:"Hiragana"}, "ぐ":{r:"gu",t:"Hiragana"}, "げ":{r:"ge",t:"Hiragana"}, "ご":{r:"go",t:"Hiragana"},
+    "ざ":{r:"za",t:"Hiragana"}, "じ":{r:"ji",t:"Hiragana"}, "ず":{r:"zu",t:"Hiragana"}, "ぜ":{r:"ze",t:"Hiragana"}, "ぞ":{r:"zo",t:"Hiragana"},
+    "だ":{r:"da",t:"Hiragana"}, "ぢ":{r:"ji",t:"Hiragana"}, "づ":{r:"zu",t:"Hiragana"}, "で":{r:"de",t:"Hiragana"}, "ど":{r:"do",t:"Hiragana"},
+    "ば":{r:"ba",t:"Hiragana"}, "び":{r:"bi",t:"Hiragana"}, "ぶ":{r:"bu",t:"Hiragana"}, "べ":{r:"be",t:"Hiragana"}, "ぼ":{r:"bo",t:"Hiragana"},
+    "ぱ":{r:"pa",t:"Hiragana"}, "ぴ":{r:"pi",t:"Hiragana"}, "ぷ":{r:"pu",t:"Hiragana"}, "ぺ":{r:"pe",t:"Hiragana"}, "ぽ":{r:"po",t:"Hiragana"},
+    "きゃ":{r:"kya",t:"Hiragana"}, "きゅ":{r:"kyu",t:"Hiragana"}, "きょ":{r:"kyo",t:"Hiragana"},
+    "しゃ":{r:"sha",t:"Hiragana"}, "しゅ":{r:"shu",t:"Hiragana"}, "しょ":{r:"sho",t:"Hiragana"},
+    "ちゃ":{r:"cha",t:"Hiragana"}, "ちゅ":{r:"chu",t:"Hiragana"}, "ちょ":{r:"cho",t:"Hiragana"},
+    "にゃ":{r:"nya",t:"Hiragana"}, "にゅ":{r:"nyu",t:"Hiragana"}, "にょ":{r:"nyo",t:"Hiragana"},
+    "ひゃ":{r:"hya",t:"Hiragana"}, "ひゅ":{r:"hyu",t:"Hiragana"}, "ひょ":{r:"hyo",t:"Hiragana"},
+    "みゃ":{r:"mya",t:"Hiragana"}, "みゅ":{r:"myu",t:"Hiragana"}, "みょ":{r:"myo",t:"Hiragana"},
+    "りゃ":{r:"rya",t:"Hiragana"}, "りゅ":{r:"ryu",t:"Hiragana"}, "りょ":{r:"ryo",t:"Hiragana"},
+    "ぎゃ":{r:"gya",t:"Hiragana"}, "ぎゅ":{r:"gyu",t:"Hiragana"}, "ぎょ":{r:"gyo",t:"Hiragana"},
+    "じゃ":{r:"ja",t:"Hiragana"}, "じゅ":{r:"ju",t:"Hiragana"}, "じょ":{r:"jo",t:"Hiragana"},
+    "びゃ":{r:"bya",t:"Hiragana"}, "びゅ":{r:"byu",t:"Hiragana"}, "びょ":{r:"byo",t:"Hiragana"},
+    "ぴゃ":{r:"pya",t:"Hiragana"}, "ぴゅ":{r:"pyu",t:"Hiragana"}, "ぴょ":{r:"pyo",t:"Hiragana"},
+
+    // Katakana
+    "ア":{r:"a",t:"Katakana"}, "イ":{r:"i",t:"Katakana"}, "ウ":{r:"u",t:"Katakana"}, "エ":{r:"e",t:"Katakana"}, "オ":{r:"o",t:"Katakana"},
+    "カ":{r:"ka",t:"Katakana"}, "キ":{r:"ki",t:"Katakana"}, "ク":{r:"ku",t:"Katakana"}, "ケ":{r:"ke",t:"Katakana"}, "コ":{r:"ko",t:"Katakana"},
+    "サ":{r:"sa",t:"Katakana"}, "シ":{r:"shi",t:"Katakana"}, "ス":{r:"su",t:"Katakana"}, "セ":{r:"se",t:"Katakana"}, "ソ":{r:"so",t:"Katakana"},
+    "タ":{r:"ta",t:"Katakana"}, "チ":{r:"chi",t:"Katakana"}, "ツ":{r:"tsu",t:"Katakana"}, "テ":{r:"te",t:"Katakana"}, "ト":{r:"to",t:"Katakana"},
+    "ナ":{r:"na",t:"Katakana"}, "ニ":{r:"ni",t:"Katakana"}, "ヌ":{r:"nu",t:"Katakana"}, "ネ":{r:"ne",t:"Katakana"}, "ノ":{r:"no",t:"Katakana"},
+    "ハ":{r:"ha",t:"Katakana"}, "ヒ":{r:"hi",t:"Katakana"}, "フ":{r:"fu",t:"Katakana"}, "ヘ":{r:"he",t:"Katakana"}, "ホ":{r:"ho",t:"Katakana"},
+    "マ":{r:"ma",t:"Katakana"}, "ミ":{r:"mi",t:"Katakana"}, "ム":{r:"mu",t:"Katakana"}, "メ":{r:"me",t:"Katakana"}, "モ":{r:"mo",t:"Katakana"},
+    "ヤ":{r:"ya",t:"Katakana"}, "ユ":{r:"yu",t:"Katakana"}, "ヨ":{r:"yo",t:"Katakana"},
+    "ラ":{r:"ra",t:"Katakana"}, "リ":{r:"ri",t:"Katakana"}, "ル":{r:"ru",t:"Katakana"}, "レ":{r:"re",t:"Katakana"}, "ロ":{r:"ro",t:"Katakana"},
+    "ワ":{r:"wa",t:"Katakana"}, "ヲ":{r:"wo",t:"Katakana"}, "ン":{r:"n",t:"Katakana"},
+    "ガ":{r:"ga",t:"Katakana"}, "ギ":{r:"gi",t:"Katakana"}, "グ":{r:"gu",t:"Katakana"}, "ゲ":{r:"ge",t:"Katakana"}, "ゴ":{r:"go",t:"Katakana"},
+    "ザ":{r:"za",t:"Katakana"}, "ジ":{r:"ji",t:"Katakana"}, "ズ":{r:"zu",t:"Katakana"}, "ゼ":{r:"ze",t:"Katakana"}, "ゾ":{r:"zo",t:"Katakana"},
+    "ダ":{r:"da",t:"Katakana"}, "ヂ":{r:"ji",t:"Katakana"}, "ヅ":{r:"zu",t:"Katakana"}, "デ":{r:"de",t:"Katakana"}, "ド":{r:"do",t:"Katakana"},
+    "バ":{r:"ba",t:"Katakana"}, "ビ":{r:"bi",t:"Katakana"}, "ブ":{r:"bu",t:"Katakana"}, "ベ":{r:"be",t:"Katakana"}, "ボ":{r:"bo",t:"Katakana"},
+    "パ":{r:"pa",t:"Katakana"}, "ピ":{r:"pi",t:"Katakana"}, "プ":{r:"pu",t:"Katakana"}, "ペ":{r:"pe",t:"Katakana"}, "ポ":{r:"po",t:"Katakana"},
+    "キャ":{r:"kya",t:"Katakana"}, "キュ":{r:"kyu",t:"Katakana"}, "キョ":{r:"kyo",t:"Katakana"},
+    "シャ":{r:"sha",t:"Katakana"}, "シュ":{r:"shu",t:"Katakana"}, "ショ":{r:"sho",t:"Katakana"},
+    "チャ":{r:"cha",t:"Katakana"}, "チュ":{r:"chu",t:"Katakana"}, "チョ":{r:"cho",t:"Katakana"},
+    "ニャ":{r:"nya",t:"Katakana"}, "ニュ":{r:"nyu",t:"Katakana"}, "ニョ":{r:"nyo",t:"Katakana"},
+    "ヒャ":{r:"hya",t:"Katakana"}, "ヒュ":{r:"hyu",t:"Katakana"}, "ヒョ":{r:"hyo",t:"Katakana"},
+    "ミャ":{r:"mya",t:"Katakana"}, "ミュ":{r:"myu",t:"Katakana"}, "ミョ":{r:"myo",t:"Katakana"},
+    "リャ":{r:"rya",t:"Katakana"}, "リュ":{r:"ryu",t:"Katakana"}, "リョ":{r:"ryo",t:"Katakana"},
+    "ギャ":{r:"gya",t:"Katakana"}, "ギュ":{r:"gyu",t:"Katakana"}, "ギョ":{r:"gyo",t:"Katakana"},
+    "ジャ":{r:"ja",t:"Katakana"}, "ジュ":{r:"ju",t:"Katakana"}, "ジョ":{r:"jo",t:"Katakana"},
+    "ビャ":{r:"bya",t:"Katakana"}, "ビュ":{r:"byu",t:"Katakana"}, "ビョ":{r:"byo",t:"Katakana"},
+    "ピャ":{r:"pya",t:"Katakana"}, "ピュ":{r:"pyu",t:"Katakana"}, "ピョ":{r:"pyo",t:"Katakana"},
+    
+    // Additional small kana sounds
+    "ティ":{r:"ti",t:"Katakana"}, "ディ":{r:"di",t:"Katakana"},
+    "ファ":{r:"fa",t:"Katakana"}, "フィ":{r:"fi",t:"Katakana"}, "フェ":{r:"fe",t:"Katakana"}, "フォ":{r:"fo",t:"Katakana"},
+    "ウィ":{r:"wi",t:"Katakana"}, "ウェ":{r:"we",t:"Katakana"}, "ウォ":{r:"wo",t:"Katakana"},
+    "ヴァ":{r:"va",t:"Katakana"}, "ヴィ":{r:"vi",t:"Katakana"}, "ヴェ":{r:"ve",t:"Katakana"}, "ヴォ":{r:"vo",t:"Katakana"},
+    "チェ":{r:"che",t:"Katakana"}, "シェ":{r:"she",t:"Katakana"}, "ジェ":{r:"je",t:"Katakana"}
   }
 };
 
