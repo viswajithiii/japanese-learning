@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Transfer — Japanese</title>
+  <meta name="description" content="A Thinking Method course for Japanese, inspired by Language Transfer">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Language Transfer</h1>
+        <div class="subtitle">Japanese · The Thinking Method</div>
+      </div>
+      <div class="track-list" id="trackList"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main" id="mainContent">
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-content" id="welcomeContent" style="display: none;">
+          <h2>思考法</h2>
+          <p>Select a track from the sidebar to begin. Each track introduces one new concept. Think through each exercise before revealing the answer.</p>
+          <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">Don't take notes. Don't memorize. Just think.</p>
+          <button class="nav-btn primary" id="resumeBtn" style="margin-top: 24px; display: none;" onclick="app.resumeProgress()">Resume Progress</button>
+        </div>
+        
+        <div class="welcome-content" id="passwordPrompt" style="display: none;">
+          <h2>Encrypted Course</h2>
+          <p>Please enter the decryption password to access the content.</p>
+          <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: center;">
+            <input type="password" id="passwordInput" placeholder="Password" style="padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+            <button class="nav-btn primary" onclick="app.decryptData()">Decrypt</button>
+          </div>
+          <div id="decryptError" style="color: var(--accent-red); font-size: 13px; margin-top: 12px; display: none;">Incorrect password or corrupted data.</div>
+        </div>
+      </div>
+
+      <div id="trackView" style="display: none;">
+        <header class="main-header" id="trackHeader"></header>
+        <div class="steps-container" id="stepsContainer"></div>
+      </div>
+
+      <div class="nav-bar" id="navBar" style="display: none;">
+        <div class="nav-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-text" id="progressText">0 / 0</span>
+        </div>
+        <div class="nav-buttons">
+          <button class="nav-btn" id="prevStepBtn" onclick="app.prevStep()">← Back</button>
+          <button class="nav-btn primary" id="nextStepBtn" onclick="app.nextStep()">Next →</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
