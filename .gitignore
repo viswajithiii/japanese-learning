@@ -8,5 +8,8 @@ __pycache__/
 # Ignore raw track JSON files (so only the encrypted data.js is pushed)
 tracks_*.json
 
+# Ignore blueprint markdown file
+lt_japanese_course_blueprint.md
+
 # Ignore macOS system files
 .DS_Store
