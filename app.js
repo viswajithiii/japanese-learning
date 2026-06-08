@@ -451,8 +451,8 @@ const app = {
   },
 
   toggleBreakdown(index) {
-    const content = document.getElementById(\`breakdownContent\${index}\`);
-    const icon = document.getElementById(\`breakdownIcon\${index}\`);
+    const content = document.getElementById(`breakdownContent${index}`);
+    const icon = document.getElementById(`breakdownIcon${index}`);
     if (content.style.display === 'none') {
       content.style.display = 'block';
       icon.textContent = '▼';
