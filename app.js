@@ -440,12 +440,12 @@ const app = {
         matchedChar = char;
       }
       
-      resultHTML += \`
+      resultHTML += `
         <div style="display: flex; gap: 12px; margin-bottom: 4px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-weight: bold; width: 24px; color: var(--text-primary); text-align: center;">\${matchedChar}</span>
-          <span style="color: var(--accent-gold); width: 60px;">\${soundObj.r}</span>
-          <span style="color: var(--text-muted); font-size: 11px; align-self: center;">\${soundObj.t}</span>
-        </div>\`;
+          <span style="font-weight: bold; width: 24px; color: var(--text-primary); text-align: center;">${matchedChar}</span>
+          <span style="color: var(--accent-gold); width: 60px;">${soundObj.r}</span>
+          <span style="color: var(--text-muted); font-size: 11px; align-self: center;">${soundObj.t}</span>
+        </div>`;
     }
     return resultHTML || '<div style="color: var(--text-muted); padding: 4px 0;">No kana found</div>';
   },
