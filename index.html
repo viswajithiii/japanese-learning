@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Language Transfer — Japanese</title>
-  <meta name="description" content="A Thinking Method course for Japanese, inspired by Language Transfer">
+  <title>Language Transfer — The Thinking Method</title>
+  <meta name="description" content="A Thinking Method course for Japanese & Chinese, inspired by Language Transfer">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,7 +13,11 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <h1>Language Transfer</h1>
-        <div class="subtitle">Japanese · The Thinking Method</div>
+        <div class="lang-toggle">
+          <button class="lang-btn active" id="langBtnJp" onclick="app.switchLanguage('japanese')">🇯🇵 Japanese</button>
+          <button class="lang-btn" id="langBtnZh" onclick="app.switchLanguage('chinese')">🇨🇳 Chinese</button>
+        </div>
+        <div class="subtitle" id="sidebarSubtitle">Japanese · The Thinking Method</div>
       </div>
       <div class="track-list" id="trackList"></div>
     </aside>

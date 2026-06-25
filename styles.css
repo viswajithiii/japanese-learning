@@ -78,12 +78,53 @@ body {
 }
 
 .sidebar-header .subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin-top: 4px;
-  font-weight: 400;
-  letter-spacing: 1px;
+  margin-top: 8px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+}
+
+/* ── Language Toggle ── */
+.lang-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.3);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-top: 14px;
+  gap: 4px;
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.lang-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.04);
+}
+
+.lang-btn.active {
+  color: #0b0b12;
+  background: var(--accent-gold);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(232, 168, 56, 0.35);
 }
 
 .track-list {

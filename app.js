@@ -1,6 +1,8 @@
-// ── Language Transfer Japanese — App Logic ──
+// ── Language Transfer — App Logic (Japanese & Chinese) ──
 
 const app = {
+  currentLang: 'japanese',
+  rawCourseData: null,
   data: null,
   currentTrackIndex: -1,
   currentStepIndex: -1,
@@ -9,7 +11,21 @@ const app = {
 
   // ── Init ──
   init() {
-    if (typeof COURSE_DATA === 'undefined') {
+    const savedLang = localStorage.getItem('lt_current_lang') || 'japanese';
+    this.currentLang = savedLang;
+
+    const btnJp = document.getElementById('langBtnJp');
+    const btnZh = document.getElementById('langBtnZh');
+    const subtitle = document.getElementById('sidebarSubtitle');
+    if (btnJp) btnJp.classList.toggle('active', this.currentLang === 'japanese');
+    if (btnZh) btnZh.classList.toggle('active', this.currentLang === 'chinese');
+    if (subtitle) subtitle.textContent = `${this.currentLang === 'chinese' ? 'Mandarin Chinese' : 'Japanese'} · The Thinking Method`;
+
+    const targetCourseData = this.currentLang === 'chinese' 
+      ? (typeof CHINESE_COURSE_DATA !== 'undefined' ? CHINESE_COURSE_DATA : null)
+      : (typeof JAPANESE_COURSE_DATA !== 'undefined' ? JAPANESE_COURSE_DATA : (typeof COURSE_DATA !== 'undefined' ? COURSE_DATA : null));
+
+    if (!targetCourseData) {
       document.getElementById('welcomeScreen').innerHTML = `
         <div class="welcome-content">
           <h2>Missing Data</h2>
@@ -18,17 +34,38 @@ const app = {
       return;
     }
     
-    if (COURSE_DATA.encrypted) {
-      const savedPwd = localStorage.getItem('lt_japanese_pwd');
+    this.rawCourseData = targetCourseData;
+
+    if (this.rawCourseData.encrypted) {
+      const savedPwd = localStorage.getItem('lt_' + this.currentLang + '_pwd');
       if (savedPwd) {
         this.decryptData(savedPwd);
       } else {
+        document.getElementById('welcomeContent').style.display = 'none';
         document.getElementById('passwordPrompt').style.display = 'block';
       }
     } else {
-      this.data = COURSE_DATA;
+      this.data = this.rawCourseData;
       this.onDataReady();
     }
+  },
+
+  switchLanguage(lang) {
+    if (this.currentLang === lang) return;
+    this.currentLang = lang;
+    localStorage.setItem('lt_current_lang', lang);
+    this.currentTrackIndex = -1;
+    this.currentStepIndex = -1;
+    this.revealedSteps.clear();
+    this.revealedHints.clear();
+
+    document.getElementById('trackView').style.display = 'none';
+    document.getElementById('navBar').style.display = 'none';
+    document.getElementById('welcomeScreen').style.display = '';
+    document.getElementById('passwordPrompt').style.display = 'none';
+    document.getElementById('welcomeContent').style.display = 'none';
+
+    this.init();
   },
 
   async decryptData(autoPwd = null) {
@@ -36,9 +73,9 @@ const app = {
     if (!autoPwd) document.getElementById('decryptError').style.display = 'none';
     
     try {
-      const salt = this.base64ToArrayBuffer(COURSE_DATA.salt);
-      const iv = this.base64ToArrayBuffer(COURSE_DATA.iv);
-      const ciphertext = this.base64ToArrayBuffer(COURSE_DATA.ciphertext);
+      const salt = this.base64ToArrayBuffer(this.rawCourseData.salt);
+      const iv = this.base64ToArrayBuffer(this.rawCourseData.iv);
+      const ciphertext = this.base64ToArrayBuffer(this.rawCourseData.ciphertext);
       
       const enc = new TextEncoder();
       const keyMaterial = await window.crypto.subtle.importKey(
@@ -73,7 +110,7 @@ const app = {
       this.data = JSON.parse(jsonStr);
       
       if (!autoPwd) {
-        localStorage.setItem('lt_japanese_pwd', pwdInput);
+        localStorage.setItem('lt_' + this.currentLang + '_pwd', pwdInput);
       }
       
       document.getElementById('passwordPrompt').style.display = 'none';
@@ -82,7 +119,7 @@ const app = {
     } catch (e) {
       console.error("Decryption failed:", e);
       if (autoPwd) {
-        localStorage.removeItem('lt_japanese_pwd');
+        localStorage.removeItem('lt_' + this.currentLang + '_pwd');
         document.getElementById('passwordPrompt').style.display = 'block';
       } else {
         document.getElementById('decryptError').style.display = 'block';
@@ -153,7 +190,7 @@ const app = {
         <h4>New Vocabulary</h4>
         ${track.vocabularyIntroduced.map(v => `
           <div class="vocab-item">
-            <span class="word">${v.word} <span style="color:var(--text-muted);font-weight:400">(${v.kana})</span></span>
+            <span class="word">${v.word || v.pinyin} <span style="color:var(--text-muted);font-weight:400">(${v.kana || v.hanzi})</span></span>
             <span class="meaning">${v.meaning}</span>
           </div>
         `).join('')}
@@ -200,6 +237,9 @@ const app = {
     const followUpHtml = step.followUp
       ? `<div class="answer-followup">${step.followUp}</div>` : '';
 
+    const romajiText = step.answer.romaji || step.answer.pinyin || '';
+    const kanaText = step.answer.kana || step.answer.hanzi || '';
+
     return `
       <div class="step step-exercise" id="step${index}" style="display:none">
         <div class="exercise-prompt">
@@ -211,21 +251,22 @@ const app = {
           ▼ Reveal Answer
         </button>
         <div class="exercise-answer" id="answer${index}">
-          <div class="answer-romaji">${step.answer.romaji}</div>
-          <div class="answer-kana">${step.answer.kana}</div>
+          <div class="answer-romaji">${romajiText}</div>
+          <div class="answer-kana">${kanaText}</div>
           <div class="answer-literal">${step.answer.literal}</div>
-          <button class="pronunciation-btn" onclick="app.speak('${step.answer.kana}')">
+          <button class="pronunciation-btn" onclick="app.speak('${kanaText}')">
             🔊 Pronounce
           </button>
           
+          ${this.currentLang === 'japanese' ? `
           <div class="kana-breakdown-container">
             <button class="hint-toggle" onclick="app.toggleBreakdown(${index})" style="margin-top: 12px; display: flex; align-items: center; gap: 4px;">
                <span id="breakdownIcon${index}">▶</span> Character Breakdown
             </button>
             <div id="breakdownContent${index}" style="display:none; margin-top: 8px; font-size: 13px; border-left: 2px solid var(--border); padding-left: 12px; max-height: 200px; overflow-y: auto;">
-              ${app.generateBreakdownHTML(step.answer.kana)}
+              ${app.generateBreakdownHTML(kanaText)}
             </div>
-          </div>
+          </div>` : ''}
           
           ${followUpHtml}
         </div>
@@ -308,13 +349,14 @@ const app = {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
+      const isZh = this.currentLang === 'chinese';
+      utterance.lang = isZh ? 'zh-CN' : 'ja-JP';
       utterance.rate = 0.85;
 
-      // Try to find a Japanese voice
       const voices = window.speechSynthesis.getVoices();
-      const jpVoice = voices.find(v => v.lang.startsWith('ja'));
-      if (jpVoice) utterance.voice = jpVoice;
+      const targetPrefix = isZh ? 'zh' : 'ja';
+      const voice = voices.find(v => v.lang.startsWith(targetPrefix));
+      if (voice) utterance.voice = voice;
 
       window.speechSynthesis.speak(utterance);
     }
@@ -355,26 +397,28 @@ const app = {
       stepIndex: this.currentStepIndex,
       revealedSteps: Array.from(this.revealedSteps)
     };
-    localStorage.setItem('lt_japanese_progress', JSON.stringify(state));
+    localStorage.setItem('lt_' + this.currentLang + '_progress', JSON.stringify(state));
   },
 
   loadProgress() {
     try {
-      const saved = localStorage.getItem('lt_japanese_progress');
-      if (saved) {
+      const saved = localStorage.getItem('lt_' + this.currentLang + '_progress');
+      const btn = document.getElementById('resumeBtn');
+      if (saved && btn) {
         const state = JSON.parse(saved);
         if (state.trackIndex >= 0 && state.trackIndex < this.data.tracks.length) {
-          const btn = document.getElementById('resumeBtn');
           btn.style.display = 'inline-block';
           btn.textContent = `Resume Track ${this.data.tracks[state.trackIndex].id}`;
+          return;
         }
       }
+      if (btn) btn.style.display = 'none';
     } catch (e) { /* ignore */ }
   },
 
   resumeProgress() {
     try {
-      const saved = localStorage.getItem('lt_japanese_progress');
+      const saved = localStorage.getItem('lt_' + this.currentLang + '_progress');
       if (!saved) return;
       const state = JSON.parse(saved);
       

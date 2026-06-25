@@ -1,0 +1,147 @@
+{
+  "courseName": "Language Transfer Mandarin Chinese",
+  "version": "0.1",
+  "description": "Foundational tracks 1-5 for DIY Language Transfer Mandarin Chinese.",
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Tones & SVO Structure",
+      "newConcept": "Mandarin Tones & Basic SVO Word Order",
+      "conceptNote": "Tones are voice contours. 1st: high/flat; 2nd: rising; 3rd: dipping; 4th: falling. Basic word order is Subject-Verb-Object.",
+      "estimatedMinutes": 6,
+      "vocabularyIntroduced": [
+        { "word": "wǒ", "kana": "我", "meaning": "I / me", "verbGroup": "noun" },
+        { "word": "hē", "kana": "喝", "meaning": "to drink", "verbGroup": "verb" },
+        { "word": "chá", "kana": "茶", "meaning": "tea", "verbGroup": "noun" }
+      ],
+      "steps": [
+        {
+          "type": "exposition",
+          "text": "Welcome to Language Transfer Mandarin Chinese! In this course, we will build Mandarin from the ground up using logic and transfer. Let's start with tones: think of them not as musical notes, but as natural English intonations. The 4th tone is like an emphatic 'No!'. The 2nd tone is like asking 'Huh?'."
+        },
+        {
+          "type": "exercise",
+          "prompt": "How would you say: 'I drink tea'?",
+          "hint": "Mandarin word order is identical to English Subject-Verb-Object.",
+          "answer": {
+            "romaji": "Wǒ hē chá",
+            "kana": "我喝茶",
+            "literal": "I drink tea"
+          },
+          "followUp": "Notice how simple that is! No verb conjugations whatsoever."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Questions with Ma",
+      "newConcept": "Spoken question particle 吗 (ma)",
+      "conceptNote": "Add 吗 to the end of any statement to turn it into a yes/no question.",
+      "estimatedMinutes": 5,
+      "vocabularyIntroduced": [
+        { "word": "nǐ", "kana": "你", "meaning": "you", "verbGroup": "noun" },
+        { "word": "ma", "kana": "吗", "meaning": "question particle", "verbGroup": "particle" }
+      ],
+      "steps": [
+        {
+          "type": "exposition",
+          "text": "To turn any statement into a yes/no question in Mandarin, you don't invert word order like in English. You simply add the spoken question mark particle 吗 (ma) to the very end of the sentence."
+        },
+        {
+          "type": "exercise",
+          "prompt": "How would you ask: 'Do you drink tea?'",
+          "hint": "Start with 'You drink tea' and add the question particle at the end.",
+          "answer": {
+            "romaji": "Nǐ hē chá ma?",
+            "kana": "你喝茶吗？",
+            "literal": "You drink tea [question]"
+          },
+          "followUp": "Exactly! Nǐ hē chá ma."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Negation with Bu",
+      "newConcept": "Negating actions with 不 (bù)",
+      "conceptNote": "Place 不 directly before the verb to negate present or future actions.",
+      "estimatedMinutes": 6,
+      "vocabularyIntroduced": [
+        { "word": "bù", "kana": "不", "meaning": "not / no", "verbGroup": "adverb" },
+        { "word": "kāfēi", "kana": "咖啡", "meaning": "coffee", "verbGroup": "noun" }
+      ],
+      "steps": [
+        {
+          "type": "exposition",
+          "text": "To say you do not do something, place 不 (bù) immediately before the verb. Notice our first phonetic loanword: kāfēi (coffee)!"
+        },
+        {
+          "type": "exercise",
+          "prompt": "How would you say: 'I don't drink coffee'?",
+          "hint": "Place 不 before the verb 'to drink'.",
+          "answer": {
+            "romaji": "Wǒ bù hē kāfēi",
+            "kana": "我不喝咖啡",
+            "literal": "I not drink coffee"
+          },
+          "followUp": "Spot on. Wǒ bù hē kāfēi."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Wanting with Yao",
+      "newConcept": "Modal verb 要 (yào) to want",
+      "conceptNote": "要 precedes the noun or action verb to express desire or requirement.",
+      "estimatedMinutes": 6,
+      "vocabularyIntroduced": [
+        { "word": "yào", "kana": "要", "meaning": "to want", "verbGroup": "verb" }
+      ],
+      "steps": [
+        {
+          "type": "exposition",
+          "text": "The verb 要 (yào) means 'to want'. Just like in English, you can place it before a noun ('want tea') or before another verb ('want to drink')."
+        },
+        {
+          "type": "exercise",
+          "prompt": "How would you ask: 'Do you want to drink coffee?'",
+          "hint": "Combine 'You want drink coffee' with the question particle ma.",
+          "answer": {
+            "romaji": "Nǐ yào hē kāfēi ma?",
+            "kana": "你要喝咖啡吗？",
+            "literal": "You want drink coffee [question]"
+          },
+          "followUp": "Great job building multi-verb sentences effortlessly."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Possession with De",
+      "newConcept": "Possessive particle 的 (de)",
+      "conceptNote": "Attach 的 to a pronoun or noun to indicate possession (like English 's).",
+      "estimatedMinutes": 5,
+      "vocabularyIntroduced": [
+        { "word": "de", "kana": "的", "meaning": "possessive particle", "verbGroup": "particle" },
+        { "word": "tā", "kana": "他", "meaning": "he / him", "verbGroup": "noun" }
+      ],
+      "steps": [
+        {
+          "type": "exposition",
+          "text": "To say 'my' or 'his', attach the connecting particle 的 (de) after the pronoun. So wǒ is 'I', and wǒ de is 'my'."
+        },
+        {
+          "type": "exercise",
+          "prompt": "How would you say: 'He wants my tea'?",
+          "hint": "Use tā for 'he' and wǒ de for 'my'.",
+          "answer": {
+            "romaji": "Tā yào wǒ de chá",
+            "kana": "他要我的茶",
+            "literal": "He want I [possessive] tea"
+          },
+          "followUp": "Awesome. You now have the core building blocks of Mandarin!"
+        }
+      ]
+    }
+  ]
+}
