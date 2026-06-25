@@ -6,7 +6,7 @@ __pycache__/
 *.pyc
 
 # Ignore raw track JSON files (so only the encrypted data.js is pushed)
-tracks_*
+*tracks_*
 
 # Ignore md files
 *.md
